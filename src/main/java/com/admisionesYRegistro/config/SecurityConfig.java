@@ -26,7 +26,14 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         // 3. Permite acceso público a los endpoints de Registro y Login
-                        .requestMatchers("/api/loginEstudiantes/**", "/api/registroAspirantes/**").permitAll()
+                        // 🛑 CORRECCIÓN CLAVE para el 403: Incluimos /api/loginAdministrativo/**
+                        .requestMatchers(
+                                "/api/loginEstudiantes/**",
+                                "/api/registroAspirantes/**",
+                                "/api/loginAdministrativo/**",
+                                "/api/request/**"
+
+                        ).permitAll()
 
                         // 4. Cualquier otra petición a la API debe estar autenticada
                         .anyRequest().authenticated()

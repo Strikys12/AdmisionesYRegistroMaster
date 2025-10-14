@@ -4,14 +4,16 @@ import com.admisionesYRegistro.RegistroAspirantes.models.RegistroAspirantesModel
 import com.admisionesYRegistro.RegistroAspirantes.services.RegistroAspirantesServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus; // 🛑 Importar HttpStatus
-import org.springframework.http.ResponseEntity; // 🛑 Importar ResponseEntity
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import java.util.Optional;
 
 import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/registroAspirantes")
+// Nota: La configuración CORS global en SecurityConfig es preferible,
+// pero mantenemos @CrossOrigin aquí si no tienes esa configuración global.
 @CrossOrigin(origins = "http://127.0.0.1:5501")
 
 public class RegistroAspirantesController {
@@ -26,18 +28,22 @@ public class RegistroAspirantesController {
 
     }
 
+    // 🛑 MÉTODO POST CORREGIDO PARA MANEJAR EMAIL DUPLICADO (409)
     @PostMapping
-    public ResponseEntity<RegistroAspirantesModel> saveRegistro(@RequestBody RegistroAspirantesModel registro){
+    public ResponseEntity<?> saveRegistro(@RequestBody RegistroAspirantesModel registro){
         try {
             RegistroAspirantesModel nuevoRegistro = this.registroService.saveRequest(registro);
 
             // Éxito: Devuelve 201 Created (estándar para la creación de recursos)
-            return new ResponseEntity<>(nuevoRegistro, HttpStatus.CREATED);
+            return ResponseEntity.status(HttpStatus.CREATED).body(nuevoRegistro);
+        } catch (IllegalStateException e) {
+            // 🛑 ERROR DE CONFLICTO (EMAIL DUPLICADO): Devuelve 409 Conflict
+            // El mensaje de error del Servicio se envía en el cuerpo.
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"message\": \"" + e.getMessage() + "\"}");
         } catch (Exception e) {
-            // Error: Devuelve 400 Bad Request o 500 Internal Server Error, según el caso.
-            // Para simplificar, usamos 400.
+            // Manejo genérico para otros errores de servidor
             System.err.println("Error al guardar el registro y credenciales: " + e.getMessage());
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"message\": \"Error interno al registrar el aspirante.\"}");
         }
     }
 

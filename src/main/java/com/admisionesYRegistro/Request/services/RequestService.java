@@ -1,4 +1,5 @@
 package com.admisionesYRegistro.Request.services;
+
 import com.admisionesYRegistro.Request.models.RequestModel;
 import com.admisionesYRegistro.Request.repositories.IRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +14,25 @@ public class RequestService {
     @Autowired
     IRequestRepository requestRepository;
 
-    public ArrayList<com.admisionesYRegistro.Request.models.RequestModel> getRequests(){
+    public ArrayList<RequestModel> getRequests(){
         return (ArrayList<RequestModel>) requestRepository.findAll();
     }
 
-    public com.admisionesYRegistro.Request.models.RequestModel saveRequest(RequestModel request){
+    public RequestModel saveRequest(RequestModel request){
+
+        // 🛑 PASO 1: VERIFICAR SI EL NUMERO DE DOCUMENTO YA EXISTE
+        Optional<RequestModel> solicitudExistente =
+                requestRepository.findBynumeroDoc(request.getNumeroDoc());
+
+        if (solicitudExistente.isPresent()) {
+            // Si existe, lanza una excepción (la cual será capturada por el Controller)
+            throw new IllegalStateException("El número de documento ya está registrado en una solicitud.");
+        }
+
+        // 🛑 PASO 2: GUARDAR LA SOLICITUD
+        // Nota: Las referencias a LoginEstudianteModel y su service fueron eliminadas
+        // ya que no corresponden a este flujo de 'Request'.
+
         return requestRepository.save(request);
     }
 
@@ -47,8 +62,7 @@ public class RequestService {
         request1.setPrimerPrograma(request.getPrimerPrograma());
         request1.setSegundoPrograma(request.getSegundoPrograma());
 
-        return request1;
-
+        return requestRepository.save(request1);
     }
 
     public Boolean deleteRequest (Long id){
@@ -57,7 +71,6 @@ public class RequestService {
             return true;
         }catch (Exception e){
             return false;
-
         }
     }
 }

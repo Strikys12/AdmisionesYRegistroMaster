@@ -3,7 +3,7 @@ package com.admisionesYRegistro.RegistroAspirantes.models;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "registroaspirantes")
+@Table(name = "registroAspirantes")
 
 
 public class RegistroAspirantesModel {

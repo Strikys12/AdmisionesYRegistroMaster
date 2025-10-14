@@ -4,6 +4,8 @@ import com.admisionesYRegistro.RegistroAspirantes.models.RegistroAspirantesModel
 import com.admisionesYRegistro.RegistroAspirantes.services.RegistroAspirantesServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus; // 🛑 Importar HttpStatus
+import org.springframework.http.ResponseEntity; // 🛑 Importar ResponseEntity
 import java.util.Optional;
 
 import java.util.ArrayList;
@@ -25,9 +27,18 @@ public class RegistroAspirantesController {
     }
 
     @PostMapping
-    public RegistroAspirantesModel saveRegistro(@RequestBody RegistroAspirantesModel registro){
+    public ResponseEntity<RegistroAspirantesModel> saveRegistro(@RequestBody RegistroAspirantesModel registro){
+        try {
+            RegistroAspirantesModel nuevoRegistro = this.registroService.saveRequest(registro);
 
-        return this.registroService.saveRequest(registro);
+            // Éxito: Devuelve 201 Created (estándar para la creación de recursos)
+            return new ResponseEntity<>(nuevoRegistro, HttpStatus.CREATED);
+        } catch (Exception e) {
+            // Error: Devuelve 400 Bad Request o 500 Internal Server Error, según el caso.
+            // Para simplificar, usamos 400.
+            System.err.println("Error al guardar el registro y credenciales: " + e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping(path = "/{id}")
